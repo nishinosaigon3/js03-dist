@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Chatアプリ</title>
+</head>
+<body>
+
+<!-- コンテンツ表示画面 -->
+
+
+
+
+
+
+
+
+
+<!--/ コンテンツ表示画面 -->
+<div>
+    <div> 
+        名前: <input type="text" id="uname">
+    </div>
+    <div> 
+        <textarea name="" id="text" cols="30" rows="10"></textarea>
+    </div>
+    <div id="output" style="overflow: auto; height:300px; width:500px;" ></div>
+</div>
+
+<!-- JQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<!-- JQuery -->
+<!--** 以下Firebase **-->
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+    import { getDatabase, ref, push, set, onChildAdded, remove, onChildRemoved }
+        from "https://cdnjs.cloudflare.com/ajax/libs/firebase/9.6.0/firebase-database.min.js";
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAfnitxkvl6TDoL4Mgox1urpNdre4nLm5Y",
+      authDomain: "g-s-app.firebaseapp.com",
+      projectId: "g-s-app",
+      storageBucket: "g-s-app.appspot.com",
+      messagingSenderId: "729119021805",
+      appId: "1:729119021805:web:a83fae7fd4b2e703648ae4"
+    };
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const dbRef = ref(db,"chat");
+
+    $("#add").on("click", function () {
+     const uname = $("#uname").val();
+     const text = $("#text").val();
+     const msg = {
+         uname: uname,
+         text: text
+     }
+     // const msg = {uname,text}という書き方もある。
+    console.log(msg); 
+//これをデータベースに投げるには↓
+const newPostRef = push(dbRef);
+set(newPostRef, msg);
+
+ });
+<body>
+  
+    <div class="container">
+      <div class="textBox">
+        <div class="textBox_header">
+          <h1>Line風チャットアプリ</h1>
+        </div>
+        <div class="textBox_main">
+  
+          <div class="textBox_list">
+           <ul id="text-list" >
+           </ul>
+          </div>
+        </div>
+        
+        <div> 
+            名前: <input type="text" id="uname">
+        </div>
+        <div class="textBox_form">
+          <div class="inputForm">
+              <input type="text" name="text-input" id="text-input"  placeholder="メッセージ入力">
+              <div id="output" style="overflow: auto; height:300px; width:500px;" ></div>
+          </div>
+          <button id="add" onclick="newElement()">送信</button>
+          <button id="edit" class="hide" onclick="editElement()">編集</button>
+        </div>
+      </div>
+    </div>
+  
+  </body>
+  </html>
+  
+  <script>
+  'use strict';
+  
+  const textInput = document.getElementById('text-input');
+  const textList = document.getElementById('text-list');
+  const editBtn = document.getElementById("edit");
+  const addBtn = document.getElementById("add");
+  
+  //編集を解除
+  document.addEventListener('click', (e) => {
+    if (e.target.className == 'active-item' || e.target.tagName == 'INPUT') {
+    } else {
+        editBtn.classList.add('hide');
+        addBtn.classList.remove('hide');
+    }
+  });
+  
+  // リスト追加
+  function newElement() {
+    const text = textInput.value.trim();
+    const errorMessage = document.getElementById("getError");
+    if (text === '') {
+      errorMessage.classList.remove('hide');
+      hideMessage(errorMessage);
+            return;
+        }
+  
+    const li = document.createElement('li');
+    const span = document.createElement('span');
+    const button = document.createElement('button');
+  
+    li.classList.add('text-list-item');
+    span.textContent = text;
+    button.textContent = '削除';
+    button.classList.add('textDelete');
+    button.classList.add('hide');
+    // 削除イベントを追加
+    button.addEventListener('click', e => {
+            textList.removeChild(e.target.closest('li'));
+            textInput.value = '';
+            deleteMessage.classList.remove('hide');
+            hideMessage(deleteMessage);
+        });
+  
+    li.appendChild(span);
+    li.appendChild(button);
+    textList.appendChild(li);
+    textInput.value = '';
+    addMessage.classList.remove('hide');
+    hideMessage(addMessage);
+  }
+  
+  
+  // 編集ボタン
+  function editElement() {
+    try{
+    const text = textInput.value.trim();
+    const activeItem = document.getElementsByClassName('active-item');
+    const errorMessage = document.getElementById("getError");
+    activeItem[0].textContent = text;
+    editMessage.classList.remove('hide');
+    hideMessage(editMessage);
+    } catch (e) {
+      errorMessage.classList.remove('hide');
+      hideMessage(errorMessage);
+      console.error("エラー：", e.message);
+    }
+  }
+  
+  
+  // 削除ボタン
+  const textDelete = document.getElementsByClassName("textDelete");
+  for (let i = 0; i < textDelete.length; i++) {
+    textDelete[i].onclick = function() {
+      textList.removeChild(this.parentElement);
+      textInput.value = '';
+      deleteMessage.classList.remove('hide');
+      hideMessage(deleteMessage);
+    }
+  }
+  
+  // リストをクリックした時
+  var list = document.querySelector('ul');
+  list.addEventListener('click', function(ev) {
+    const allList = document.getElementsByClassName('text-list-item');
+    for (let i = 0; i < allList.length; i++) {
+      const listItem = allList[i];
+      if (listItem) {
+        listItem.firstElementChild.classList.remove('active-item');
+        listItem.lastElementChild.classList.add('hide');
+      }
+    }
+    if (ev.target.tagName === 'SPAN') {
+      ev.target.classList.toggle('active-item');
+    }
+    // 削除ボタン表示
+    ev.target.nextElementSibling.classList.remove('hide');
+    editBtn.classList.remove('hide');
+    addBtn.classList.add('hide');
+    textInput.value = event.target.innerHTML;
+  }, false);
+  
+  // メッセージを消す
+  function hideMessage(Element) {
+    setTimeout(() => {
+        Element.classList.add('hide');
+      }, 2500);
+  }
+  </script>
